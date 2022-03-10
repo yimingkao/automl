@@ -1,3 +1,13 @@
+# Modification
+. Add output text file for later map check
+```
+# convert model
+$ python model_inspect.py --runmode=saved_model --model_name=efficientdet-d0 --ckpt_path=efficientdet-d0 --saved_model_dir=saved_d0
+
+# run model
+$ python ../model_inspect.py --runmode=saved_model_ymkao --saved_model_dir=saved_d0 --model_name=efficientdet-d0 --input_image=test.txt --output_image_dir=out_d0 --min_score_thresh=0.05
+```
+
 # EfficientDet
 [![Paper](http://img.shields.io/badge/Paper-arXiv.1911.09070-B3181B?logo=arXiv)](https://arxiv.org/abs/1911.09070)
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.sandbox.google.com/github/google/automl/blob/master/efficientdet/tutorial.ipynb)

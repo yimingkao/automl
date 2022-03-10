@@ -61,7 +61,7 @@ flags.DEFINE_string('output_video', None,
 # For visualization.
 flags.DEFINE_integer('line_thickness', None, 'Line thickness for box.')
 flags.DEFINE_integer('max_boxes_to_draw', 100, 'Max number of boxes to draw.')
-flags.DEFINE_float('min_score_thresh', 0.4, 'Score threshold to show box.')
+flags.DEFINE_float('min_score_thresh', 0.1, 'Score threshold to show box.')
 flags.DEFINE_string('nms_method', 'hard', 'nms method, hard or gaussian.')
 
 # For saved model.
@@ -207,6 +207,28 @@ class ModelInspector(object):
       all_files = all_files * (self.batch_size // len(all_files) + 1)
     raw_images = [np.array(Image.open(f)) for f in all_files[:self.batch_size]]
     driver.benchmark(raw_images, trace_filename)
+
+  def saved_model_ymkao(self, image_list: Text, output_dir: Text, **kwargs):
+    driver = inference.ServingDriver(
+        self.model_name,
+        self.ckpt_path,
+        batch_size=1,
+        use_xla=self.use_xla,
+        model_params=self.model_config.as_dict())
+    driver.load(self.saved_model_dir)
+    if not os.path.exists(output_dir):
+      os.makedirs(output_dir)
+    height, width = self.model_config.image_size
+    
+    with open(image_list, 'rt') as f:
+      lines = f.readlines()
+      for line in lines:
+        line = line[:-1]
+        outname = output_dir+'/'+os.path.basename(line).replace('jpg', 'txt')
+        print(outname)
+        raw_frames = [np.array(Image.open(line))]
+        detections_bs = driver.serve_images(raw_frames)
+        driver.visualize_ymkao(detections_bs[0], outname, **kwargs)  
 
   def saved_model_video(self, video_path: Text, output_video: Text, **kwargs):
     """Perform video inference for the given saved model."""
@@ -449,7 +471,7 @@ class ModelInspector(object):
           kwargs['input_image'],
           trace_filename=kwargs.get('trace_filename', None))
     elif runmode in ('infer', 'saved_model', 'saved_model_infer',
-                     'saved_model_video'):
+                     'saved_model_video', 'saved_model_ymkao'):
       config_dict = {}
       if kwargs.get('line_thickness', None):
         config_dict['line_thickness'] = kwargs.get('line_thickness')
@@ -468,6 +490,9 @@ class ModelInspector(object):
                                    kwargs['output_image_dir'], **config_dict)
       elif runmode == 'saved_model_video':
         self.saved_model_video(kwargs['input_video'], kwargs['output_video'],
+                               **config_dict)
+      elif runmode == 'saved_model_ymkao':
+        self.saved_model_ymkao(kwargs['input_image'], kwargs['output_image_dir'],
                                **config_dict)
     elif runmode == 'bm':
       self.benchmark_model(

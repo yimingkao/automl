@@ -299,6 +299,16 @@ def visualize_image(image,
   """
   label_map = label_util.get_label_map(label_map or 'coco')
   category_index = {k: {'id': k, 'name': label_map[k]} for k in label_map}
+  #print(label_map)
+  #print(category_index)
+  #print(boxes)
+  #print(classes)
+  #print(scores)
+  #ymkao
+  #print(len(boxes), len(classes), len(scores))
+  #for i in range(len(boxes)):
+  #  if scores[i] >= 0.05:
+  #    print(label_map[classes[i]], boxes[i])
   img = np.array(image)
   vis_utils.visualize_boxes_and_labels_on_image_array(
       img,
@@ -480,6 +490,24 @@ class ServingDriver(object):
         prediction,
         label_map=self.label_map,
         **kwargs)
+
+  def visualize_ymkao(self, prediction, out_path, **kwargs):
+    label_map = label_util.get_label_map(self.label_map or 'coco')
+    
+    boxes = prediction[:, 1:5]
+    classes = prediction[:, 6].astype(int)
+    scores = prediction[:, 5]
+    #ymin, xmin, ymax, xmax = box
+    with open(out_path, 'wt') as f:
+      for i in range(len(boxes)):
+        if scores[i] >= 0.05 and classes[i] == 1:
+          y = int(boxes[i][0])
+          x = int(boxes[i][1])
+          h = max(int(boxes[i][2]-boxes[i][0]), 0)
+          w = max(int(boxes[i][3]-boxes[i][1]), 0)
+          out="{} {} {} {} {} {}".format(label_map[classes[i]], scores[i], x, y, w, h)
+          f.write(out+'\n')
+    return
 
   def serve_files(self, image_files: List[Text]):
     """Serve a list of input image files.
