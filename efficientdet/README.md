@@ -6,6 +6,9 @@ $ python model_inspect.py --runmode=saved_model --model_name=efficientdet-d0 --c
 
 # run model
 $ python ../model_inspect.py --runmode=saved_model_ymkao --saved_model_dir=saved_d0 --model_name=efficientdet-d0 --input_image=test.txt --output_image_dir=out_d0 --min_score_thresh=0.05
+
+# evaluate time
+$ python ../model_inspect.py --runmode=saved_model_benchmark --ckpt_path=efficientdet-d0 --saved_model_dir=saved_d0/efficientdet-d0_frozen.pb --model_name=efficientdet-d0 --input_image=test.jpg --batch_size=1
 ```
 
 # EfficientDet
